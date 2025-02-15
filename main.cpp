@@ -44,9 +44,6 @@ public:
 
     std::vector<size_t> sort(std::vector<size_t>& perm, size_t start, size_t end)
     {
-        //std::cout << "Sorting called with start=" << start << ", end=" << end << "\n";
-        //std::cout << "perm size: " << perm.size() << ", Vector size: " << size() << "\n";
-
         if (start >= end || start >= perm.size() || end > perm.size()) {
             std::cerr << "Invalid range: start=" << start << ", end=" << end << "\n";
             return perm; // No sorting if the range is invalid
@@ -60,49 +57,185 @@ public:
 
         if (!_intVector.empty())
         {
-            //std::cout << "Sorting integer vector...\n";
-            //std::cout << "Before sorting: ";
-            for (size_t i = start; i < end; ++i) std::cout << _intVector[perm[i]] << " ";
-            //std::cout << "\n";
+            // Print `_intVector` before sorting
+            std::cout << "Before sorting `_intVector` range: ";
+            for (size_t i = start; i < end; ++i) std::cout << _intVector[i] << " ";
+            std::cout << "\n";
 
-            std::sort(perm.begin() + start, perm.begin() + end, [&](size_t i, size_t j) {
-                //std::cout << "Comparing _intVector[" << i << "] = " << _intVector[i]
-                 //   << " with _intVector[" << j << "] = " << _intVector[j] << "\n";
-                return _intVector[i] < _intVector[j];
-            });
-
-            std::vector<int> temp(_intVector);
-            for (size_t i = start; i < end; ++i) {
-               // std::cout << "Setting _intVector[" << i << "] = temp[" << perm[i] << "] ("
-                 //   << temp[perm[i]] << ")\n";
-                _intVector[i] = temp[perm[i]];
+            // Selection sort applied directly to `_intVector`, while updating `perm`
+            for (size_t i = start; i < end - 1; ++i) {
+                size_t minIndex = i;
+                for (size_t j = i + 1; j < end; ++j) {
+                    if (_intVector[j] < _intVector[minIndex]) {
+                        minIndex = j;
+                    }
+                }
+                if (minIndex != i) {
+                    std::swap(_intVector[i], _intVector[minIndex]);  // Sort `_intVector`
+                    std::swap(perm[i], perm[minIndex]);  // Track movement in `perm`
+                }
             }
 
-           // std::cout << "After sorting: ";
-            for (size_t val : _intVector) std::cout << val << " ";
-            //std::cout << "\n";
+            // Print `_intVector` after sorting
+            std::cout << "After sorting `_intVector` range: ";
+            for (size_t i = 0; i < _intVector.size(); ++i) std::cout << _intVector[i] << " ";
+            std::cout << "\n";
+
+            // Print how `perm` changed (bookkeeping)
+            std::cout << "Updated permutation: ";
+            for (size_t i = 0; i < perm.size(); ++i) std::cout << perm[i] << " ";
+            std::cout << "\n";
+
         }
         else if (!_doubleVector.empty())
-        {
-           // std::cout << "Sorting double vector...\n";
-            std::vector<double> temp(_doubleVector);
-            for (size_t i = start; i < end; ++i)
-                _doubleVector[i] = temp[perm[i]];
+        { 
+            // Print `_doubleVector` before sorting
+            std::cout << "Before sorting `_doubleVector` range: ";
+            for (size_t i = start; i < end; ++i) std::cout << _doubleVector[i] << " ";
+            std::cout << "\n";
+
+            // Selection sort applied directly to `_doubleVector`, while updating `perm`
+            for (size_t i = start; i < end - 1; ++i) {
+                size_t minIndex = i;
+                for (size_t j = i + 1; j < end; ++j) {
+                    if (_doubleVector[j] < _doubleVector[minIndex]) {
+                        minIndex = j;
+                    }
+                }
+                if (minIndex != i) {
+                    std::swap(_doubleVector[i], _doubleVector[minIndex]);  // Sort `_doubleVector`
+                    std::swap(perm[i], perm[minIndex]);  // Track movement in `perm`
+                }
+            }
+
+            // Print `_doubleVector` after sorting
+            std::cout << "After sorting `_doubleVector` range: ";
+            for (size_t i = 0; i < _doubleVector.size(); ++i) std::cout << _doubleVector[i] << " ";
+            std::cout << "\n";
+
+            // Print how `perm` changed (bookkeeping)
+            std::cout << "Updated permutation: ";
+            for (size_t i = 0; i < perm.size(); ++i) std::cout << perm[i] << " ";
+            std::cout << "\n";
+
         }
         else if (!_stringVector.empty())
         {
-          //  std::cout << "Sorting string vector...\n";
-            std::vector<std::string> temp(_stringVector);
-            for (size_t i = start; i < end; ++i)
-                _stringVector[i] = temp[perm[i]];
-        }
+            // Print `_stringVector` before sorting
+            std::cout << "Before sorting `_stringVector` range: ";
+            for (size_t i = start; i < end; ++i) std::cout << _stringVector[i] << " ";
+            std::cout << "\n";
 
-       // std::cout << "Final permutation: ";
-        for (size_t p : perm) std::cout << p << " ";
-        //std::cout << "\n";
+            // Selection sort applied directly to `_stringVector`, while updating `perm`
+            for (size_t i = start; i < end - 1; ++i) {
+                size_t minIndex = i;
+                for (size_t j = i + 1; j < end; ++j) {
+                    if (_stringVector[j] < _stringVector[minIndex]) {
+                        minIndex = j;
+                    }
+                }
+                if (minIndex != i) {
+                    std::swap(_stringVector[i], _stringVector[minIndex]);  // Sort `_stringVector`
+                    std::swap(perm[i], perm[minIndex]);  // Track movement in `perm`
+                }
+            }
+
+            // Print `_stringVector` after sorting
+            std::cout << "After sorting `_stringVector` range: ";
+            for (size_t i = 0; i < _stringVector.size(); ++i) std::cout << _stringVector[i] << " ";
+            std::cout << "\n";
+
+            // Print how `perm` changed (bookkeeping)
+            std::cout << "Updated permutation: ";
+            for (size_t i = 0; i < perm.size(); ++i) std::cout << perm[i] << " ";
+            std::cout << "\n";
+
+        }
 
         return perm;
     }
+
+
+    std::vector<std::pair<size_t, size_t>> ReShard(std::vector<std::pair<size_t, size_t>>& existingShards)
+    {
+        std::vector<std::pair<size_t, size_t>> newShards;
+
+        if (!_intVector.empty())
+        {
+            for (const auto& shard : existingShards)
+            {
+                size_t start = shard.first;
+                size_t end = shard.second;
+
+                if (start >= end || end > _intVector.size()) {
+                    std::cerr << "Invalid shard: {" << start << ", " << end << "} ignored.\n";
+                    continue;
+                }
+
+                size_t currentStart = start;
+                for (size_t i = start + 1; i < end; ++i)
+                {
+                    if (_intVector[i] != _intVector[i - 1])
+                    {
+                        newShards.emplace_back(currentStart, i);
+                        currentStart = i;
+                    }
+                }
+                newShards.emplace_back(currentStart, end);
+            }
+        }
+        else if (!_doubleVector.empty())
+        {
+            for (const auto& shard : existingShards)
+            {
+                size_t start = shard.first;
+                size_t end = shard.second;
+
+                if (start >= end || end > _doubleVector.size()) {
+                    std::cerr << "Invalid shard: {" << start << ", " << end << "} ignored.\n";
+                    continue;
+                }
+
+                size_t currentStart = start;
+                for (size_t i = start + 1; i < end; ++i)
+                {
+                    if (_doubleVector[i] != _doubleVector[i - 1])
+                    {
+                        newShards.emplace_back(currentStart, i);
+                        currentStart = i;
+                    }
+                }
+                newShards.emplace_back(currentStart, end);
+            }
+        }
+        else if (!_stringVector.empty())
+        {
+            for (const auto& shard : existingShards)
+            {
+                size_t start = shard.first;
+                size_t end = shard.second;
+
+                if (start >= end || end > _stringVector.size()) {
+                    std::cerr << "Invalid shard: {" << start << ", " << end << "} ignored.\n";
+                    continue;
+                }
+
+                size_t currentStart = start;
+                for (size_t i = start + 1; i < end; ++i)
+                {
+                    if (_stringVector[i] != _stringVector[i - 1])
+                    {
+                        newShards.emplace_back(currentStart, i);
+                        currentStart = i;
+                    }
+                }
+                newShards.emplace_back(currentStart, end);
+            }
+        }
+        existingShards = newShards;
+        return newShards;
+    }
+
 
 
     void applyPermutation(const std::vector<size_t>& perm, size_t start, size_t end)
@@ -165,16 +298,26 @@ public:
                 for (size_t j = 0; j < shardsVect.size(); j++) {   
                     std::vector<size_t> tmp = it->sort(perm, shardsVect[j].first, shardsVect[j].second);
                 }
-                for (size_t j = 0; j < shardsVect.size(); j++) {  
-
-                }
+                std::vector<std::pair<size_t, size_t>> newShards = it->ReShard(shardsVect);
             }
             else {
 
-                if (i == 0) {
-                    it->applyPermutation(perm, 0, _rows);
 
+                if (i == 1) {
+                    it->applyPermutation(perm, 0, _rows);
+                    for (size_t j = 0; j < shardsVect.size(); j++) {
+                        std::vector<size_t> tmp = it->sort(perm, shardsVect[j].first, shardsVect[j].second);
+                    }
+                    std::vector<std::pair<size_t, size_t>> newShards = it->ReShard(shardsVect);
+                } 
+                if (i == 2) {
+                    it->applyPermutation(perm, 0, _rows);
+                    for (size_t j = 0; j < shardsVect.size(); j++) {
+                        std::vector<size_t> tmp = it->sort(perm, shardsVect[j].first, shardsVect[j].second);
+                    }
+                    std::vector<std::pair<size_t, size_t>> newShards = it->ReShard(shardsVect);
                 }
+
                 
             }
             // Do something with perm if needed, but don't apply it
