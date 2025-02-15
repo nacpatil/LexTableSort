@@ -57,34 +57,45 @@ public:
 
         if (!_intVector.empty())
         {
+           
             // Print `_intVector` before sorting
             std::cout << "Before sorting `_intVector` range: ";
-            for (size_t i = start; i < end; ++i) std::cout << _intVector[i] << " ";
+            for (size_t i = start; i < end; ++i) {
+                std::cout << _intVector[i] << " ";
+            }
             std::cout << "\n";
 
-            // Selection sort applied directly to `_intVector`, while updating `perm`
-            for (size_t i = start; i < end - 1; ++i) {
-                size_t minIndex = i;
-                for (size_t j = i + 1; j < end; ++j) {
-                    if (_intVector[j] < _intVector[minIndex]) {
-                        minIndex = j;
-                    }
-                }
-                if (minIndex != i) {
-                    std::swap(_intVector[i], _intVector[minIndex]);  // Sort `_intVector`
-                    std::swap(perm[i], perm[minIndex]);  // Track movement in `perm`
-                }
+            // Use `std::sort` to sort `_intVector[start:end]`, while updating `perm`
+            std::vector<size_t> indices(end - start);
+            std::iota(indices.begin(), indices.end(), start);  // Generate indices [start, ..., end-1]
+
+            std::sort(indices.begin(), indices.end(), [&](size_t i, size_t j) {
+                return _intVector[i] < _intVector[j];  // Sort `_intVector` directly
+            });
+
+            // Apply sorted order to `_intVector` and update `perm`
+            std::vector<int> temp(_intVector);
+            std::vector<size_t> tempPerm(perm);
+
+            for (size_t i = start; i < end; ++i) {
+                _intVector[i] = temp[indices[i - start]];  // Move values based on sorted indices
+                perm[i] = tempPerm[indices[i - start]];  // Move perm indices accordingly
             }
 
             // Print `_intVector` after sorting
             std::cout << "After sorting `_intVector` range: ";
-            for (size_t i = 0; i < _intVector.size(); ++i) std::cout << _intVector[i] << " ";
+            for (size_t i = 0; i < _intVector.size(); ++i) {
+                std::cout << _intVector[i] << " ";
+            }
             std::cout << "\n";
 
             // Print how `perm` changed (bookkeeping)
             std::cout << "Updated permutation: ";
-            for (size_t i = 0; i < perm.size(); ++i) std::cout << perm[i] << " ";
+            for (size_t i = 0; i < perm.size(); ++i) {
+                std::cout << perm[i] << " ";
+            }
             std::cout << "\n";
+
 
         }
         else if (!_doubleVector.empty())
@@ -317,6 +328,13 @@ public:
                     }
                     std::vector<std::pair<size_t, size_t>> newShards = it->ReShard(shardsVect);
                 }
+                if (i > 2) {
+                    it->applyPermutation(perm, 0, _rows);
+                    for (size_t j = 0; j < shardsVect.size(); j++) {
+                        std::vector<size_t> tmp = it->sort(perm, shardsVect[j].first, shardsVect[j].second);
+                    }
+                    std::vector<std::pair<size_t, size_t>> newShards = it->ReShard(shardsVect);
+                }
 
                 
             }
@@ -355,11 +373,19 @@ public:
 
     {
         // Testing
-        Table table = {
+        Table table0 = {
             AnyColumn(std::vector<int>{ 1,     2,     1,     2,     1 }),
             AnyColumn(std::vector<double>{ 5.0,   4.0,   4.0,   1.0,   6.0 }),
             AnyColumn(std::vector<std::string>{ "second", "fifth", "first", "forth", "third" })
         };
+        Table table  = {
+            AnyColumn(std::vector<int>{3, 3, 3, 1, 1, 1, 2, 2, 2, 2}),  // Repeated values for deep sharding
+            AnyColumn(std::vector<double>{4.5, 4.5, 4.5, 2.2, 2.2, 2.2, 3.3, 3.3, 3.3, 3.3}),  // Second column sharding
+            AnyColumn(std::vector<std::string>{"cat", "cat", "cat", "dog", "dog", "dog", "bird", "bird", "bird", "bird"}),  // More repetition
+            AnyColumn(std::vector<int>{10, 20, 10, 30, 40, 30, 50, 60, 50, 50}),  // Further splits in sharding
+            AnyColumn(std::vector<double>{1.01, 1.02, 1.01, 2.01, 2.02, 2.01, 3.01, 3.02, 3.01, 3.01})  // Final differentiator
+        };
+
 
         // Sort the "rows" of the table. That the third column ends up in order just makes it easy to check
         //    1     4.0    "first"
