@@ -7,20 +7,20 @@
 #include <list>
 #include <numeric>
 #include <algorithm>
-
+#include <variant>
   
 
 // Only one of the fields will be non-empty.
 std::vector<int> _intVector;
 std::vector<double> _doubleVector;
 std::vector<std::string> _stringVector;
-
+size_t _size;
  
 
 // Constructor Implementations
-AnyColumn::AnyColumn(const std::vector<int>& values) : _intVector(values) {}
-AnyColumn::AnyColumn(const std::vector<double>& values) : _doubleVector(values) {}
-AnyColumn::AnyColumn(const std::vector<std::string>& values) : _stringVector(values) {}
+AnyColumn::AnyColumn(const std::vector<int>& values) : _intVector(values) { _size = values.size(); }
+AnyColumn::AnyColumn(const std::vector<double>& values) : _doubleVector(values) { _size = values.size(); }
+AnyColumn::AnyColumn(const std::vector<std::string>& values) : _stringVector(values) { _size = values.size(); }
 
 size_t AnyColumn::size() const
 {
@@ -270,4 +270,22 @@ void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, 
 }
 
 
- 
+bool AnyColumn::areEqual(const AnyColumn& other) const {
+    // Ensure both AnyColumn objects contain the same type
+    if (_size != other._size) {
+        return false; // Different sizes, can't be equal
+    }
+
+    // Compare based on which vector is used
+    if (!_intVector.empty() && !other._intVector.empty()) {
+        return _intVector == other._intVector;
+    }
+    if (!_doubleVector.empty() && !other._doubleVector.empty()) {
+        return _doubleVector == other._doubleVector;
+    }
+    if (!_stringVector.empty() && !other._stringVector.empty()) {
+        return _stringVector == other._stringVector;
+    }
+
+    return false; // Mismatched types
+}

@@ -103,6 +103,7 @@
   <ItemGroup>
     <ClInclude Include="AnyColumn.h" />
     <ClInclude Include="catch.hpp" />
+    <ClInclude Include="doctest.h" />
     <ClInclude Include="LexicographicalSortTests.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Table.h" />

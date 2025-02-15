@@ -10,11 +10,12 @@ private:
     std::vector<int> _intVector;
     std::vector<double> _doubleVector;
     std::vector<std::string> _stringVector;
+    size_t _size;
 
 public:
     // Constructors
  
-    explicit AnyColumn(const std::vector<int>& values);
+    explicit AnyColumn(const std::vector<int>& values); 
     explicit AnyColumn(const std::vector<double>& values);
     explicit AnyColumn(const std::vector<std::string>& values);
     // Get the size of the column
@@ -31,4 +32,7 @@ public:
 
     // Apply permutation to reorder the column
     void applyPermutation(const std::vector<size_t>& perm, size_t start, size_t end);
+
+    bool areEqual(const AnyColumn& other) const;
+
 };

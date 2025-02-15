@@ -50,3 +50,27 @@ void Table::print(const std::string& str) const {
         std::cout << std::endl;
     }
 }
+
+
+
+// Compare two Table objects
+bool Table::isEqual(const Table& other) const {
+    if (_columns.size() != other._columns.size()) {
+        return false; // Different number of columns
+    }
+
+    auto it1 = _columns.begin();
+    auto it2 = other._columns.begin();
+
+    while (it1 != _columns.end() && it2 != other._columns.end()) {
+        if (!it1->areEqual(*it2)) {  // Use `AnyColumn::areEqual` for column-wise comparison
+            return false;  // Return false if any column differs
+        }
+        ++it1;
+        ++it2;
+    }
+
+    return true;  // If loop completes, all columns are equal
+}
+
+ 

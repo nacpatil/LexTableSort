@@ -23,4 +23,6 @@ public:
 
     // Print table content
     void print(const std::string& str) const;
+    bool isEqual(const Table& other) const;
+
 };
