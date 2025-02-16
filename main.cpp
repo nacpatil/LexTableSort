@@ -9,6 +9,5 @@
 
 int main() {
     Tests().Run();  // Run all test cases
-    std::cout << "Main application logic here." << std::endl;
     return 0;
 }

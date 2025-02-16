@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Table.h"
 
- 
 
 // Constructor
 Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
@@ -38,7 +37,6 @@ void Table::sort() {
             }
             shardsVect = it->ReShard(shardsVect);
         }
-        std::cout << "Column " << i << " sorted and permutation retrieved.\n";
     }
 }
 
