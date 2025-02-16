@@ -35,7 +35,6 @@ template std::vector<std::pair<size_t, size_t>> AnyColumn::reShardGeneric<std::s
 size_t AnyColumn::size() const
 {
     return _size;
-    return 0;
 }
 
 void AnyColumn::printElement(size_t index, std::ostream& stream) const

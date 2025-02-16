@@ -42,7 +42,7 @@ void Table::sort() {
 
 // Get the number of rows
 size_t Table::numRows() const {
-    return _columns.cbegin()->size();
+    return _columns.empty() ? 0 : _columns.cbegin()->size();
 }
 
 // Print table content

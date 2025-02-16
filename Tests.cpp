@@ -1,9 +1,7 @@
 #include "pch.h"
 #include "Tests.h"
 #include "../Table.h"
-#include "../AnyColumn.h"
- 
- 
+#include "../AnyColumn.h" 
 #include "doctest.h"
 
 
