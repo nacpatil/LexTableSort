@@ -185,14 +185,15 @@ TEST_CASE("Sorting Table with Identical Rows") {
     table.sort();
     CHECK(table.isEqual(expectedTable));  // Order should remain unchanged
 }
-/* Currently constructor for table is set to throw an exception. This needs more thinking when table is used in actual applciation. 
-TEST_CASE("Sorting Table with Different Column Sizes") {
+
+//Currently constructor for table is set to throw an exception. This needs more thinking when table is used in actual applciation. 
+/* TEST_CASE("Sorting Table with Different Column Sizes") {
     CHECK_THROWS_AS(Table({
         AnyColumn(std::vector<int>{1, 2, 3}),
         AnyColumn(std::vector<double>{4.5, 5.5})  // Different size
         }), std::invalid_argument);
-}
-*/
+} */
+
 
 TEST_CASE("Sorting Table with Empty Strings") {
     Table table = {
