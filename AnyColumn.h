@@ -11,6 +11,10 @@ private:
     std::vector<double> _doubleVector;
     std::vector<std::string> _stringVector;
     size_t _size;
+    template <typename T> void coreSortGeneric(std::vector<T>& data, std::vector<size_t>& perm, size_t start, size_t end);
+    template <typename T> std::vector<std::pair<size_t, size_t>> reShardGeneric( const std::vector<T>& data,
+        std::vector<std::pair<size_t, size_t>>& existingShards);
+
 
 public:
     // Constructors

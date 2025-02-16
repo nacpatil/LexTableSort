@@ -8,7 +8,7 @@
 
 class Table {
 private:
-    size_t _rows;
+    size_t _rows, _vectors_count;
     std::list<AnyColumn> _columns;
 
 public:

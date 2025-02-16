@@ -5,13 +5,21 @@
 
 // Constructor
 Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
-    _rows = _columns.front().size();
+    _rows = _columns.empty() ? 0 : _columns.front().size();
+    _vectors_count = _columns.empty() ? 0 : _columns.size();
+    // Ensure all columns have the same length
+    for (const auto& col : _columns) {
+        if (col.size() != _rows) {
+            throw std::runtime_error("Error: All columns must have the same length.");
+        }
+    }
 }
 
 // Sort the rows of the table, with the first column being the most significant
 void Table::sort() {
+    if (_vectors_count == 0) { return; }; 
     int i = 0;
-    std::vector<size_t> perm(_columns.front().size());
+    std::vector<size_t> perm(_rows);
     std::iota(perm.begin(), perm.end(), 0);
     std::vector<std::pair<size_t, size_t>> shardsVect;
     shardsVect.emplace_back(0, _rows);
