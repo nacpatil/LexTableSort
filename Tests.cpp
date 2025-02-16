@@ -65,6 +65,27 @@ TEST_CASE("Sorting Table and Comparing with Expected Result") {
 }
 
 
+TEST_CASE("Lexical Sorting with Multiple Columns") {
+    Table table = {
+        AnyColumn(std::vector<int>{5, 2, 5, 3, 1, 5, 7, 9, 3, 5}),   // First sorting key (Primary)
+        AnyColumn(std::vector<double>{3.1, 2.2, 3.1, 4.5, 5.1, 2.2, 7.7, 1.0, 4.5, 3.1}),  // Second key
+        AnyColumn(std::vector<std::string>{"zebra", "apple", "banana", "orange", "grape", "cherry", "melon", "kiwi", "peach", "banana"}), // Third key
+        AnyColumn(std::vector<int>{10, 20, 30, 40, 50, 60, 70, 80, 90, 100}), // Fourth key
+        AnyColumn(std::vector<std::string>{"x", "y", "a", "b", "c", "d", "e", "f", "g", "h"}) // Fifth key (Tiebreaker)
+    };
+
+    Table expectedTable = {
+        AnyColumn(std::vector<int>{1, 2, 3, 3, 5, 5, 5, 5, 7, 9}),
+        AnyColumn(std::vector<double>{5.1, 2.2, 4.5, 4.5, 2.2, 3.1, 3.1, 3.1, 7.7, 1.0}),
+        AnyColumn(std::vector<std::string>{"grape", "apple", "orange", "peach", "cherry", "banana", "banana", "zebra", "melon", "kiwi"}),
+        AnyColumn(std::vector<int>{50, 20, 40, 90, 60, 30, 100, 10, 70, 80}), // 30 comes before 100
+        AnyColumn(std::vector<std::string>{"c", "y", "b", "g", "d", "a", "h", "x", "e", "f"}) // Order remains the same
+    };
+
+    table.sort();  // Assuming sort follows lexical order across columns
+    CHECK(table.isEqual(expectedTable));
+}
+
 TEST_CASE("Sorting Table with Repeated Values") {
     Table table1 = {
         AnyColumn(std::vector<int>{3, 3, 3, 1, 1, 1, 2, 2, 2, 2}),
@@ -98,6 +119,7 @@ TEST_CASE("Sorting Table with Unique Values") {
     table2.sort();
     CHECK(table2.isEqual(expectedTable2));
 }
+
 
 TEST_CASE("Sorting Table with Only One Column") {
     Table table3 = {
