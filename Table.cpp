@@ -9,8 +9,7 @@ Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
     // Ensure all columns have the same length
     for (const auto& col : _columns) {
         if (col.size() != _rows) {
-            throw std::runtime_error("Error: All columns must have the same length.");
-        }
+            throw std::invalid_argument("Error: All columns must have the same length.");        }
     }
 }
 

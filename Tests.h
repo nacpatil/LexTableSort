@@ -4,6 +4,5 @@
 
 class Tests {
 public:
-    void Run();
     void runDocTests();
  };

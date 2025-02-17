@@ -18,10 +18,10 @@ private:
 
 public:
     // Constructors
- 
-    explicit AnyColumn(const std::vector<int>& values); 
-    explicit AnyColumn(const std::vector<double>& values);
-    explicit AnyColumn(const std::vector<std::string>& values);
+     AnyColumn(const std::vector<int>& values); 
+    AnyColumn(const std::vector<double>& values);
+    AnyColumn(const std::vector<std::string>& values);
+
     // Get the size of the column
     size_t size() const;
 
@@ -38,5 +38,4 @@ public:
     void applyPermutation(const std::vector<size_t>& perm, size_t start, size_t end);
 
     bool areEqual(const AnyColumn& other) const;
-
 };

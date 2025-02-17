@@ -23,6 +23,8 @@ public:
 
     // Print table content
     void print(const std::string& str) const;
+
+    //  Compare two tables and return if equal.
     bool isEqual(const Table& other) const;
 
 };
