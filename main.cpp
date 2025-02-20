@@ -42,7 +42,7 @@ std::vector<int> generateSequentialIntVector(size_t size, int thisNumber) {
 
 #pragma omp parallel for
     for (size_t i = 0; i < size; ++i) {
-        values[i] = (thisNumber + i - 1) % 9 + 1;
+        values[i] = (thisNumber + i - 1) % 9000 + 1;
     }
     return values;
 }
@@ -68,7 +68,7 @@ int main() {
 
     Tests().runDocTests();  // Run all test cases 
 
-    size_t numRows = 500000000;  // Number of rows
+    size_t numRows = 300000000;  // Number of rows
 
     Table randomIntTable = {
         AnyColumn(generateSequentialIntVector(numRows,2)),

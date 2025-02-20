@@ -30,7 +30,7 @@ public:
     void printElement(size_t index, std::ostream& stream) const;
 
     // Sorts the column within the given range and updates the permutation vector
-    std::vector<size_t> sort(std::vector<size_t>& perm, size_t start, size_t end);
+    void sort(std::vector<size_t>& perm, size_t start, size_t end);
 
     // Resharding function to split based on unique values
     std::vector<std::pair<size_t, size_t>> ReShard(std::vector<std::pair<size_t, size_t>>& existingShards);

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <variant>
 #include <execution>
+#include <omp.h>
 
 
 // Constructor Implementations
@@ -65,6 +66,7 @@ void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size
     std::vector<T> tempInstance(instanceVector.begin() + start, instanceVector.begin() + end);
     std::vector<size_t> tempPerm(perm.begin() + start, perm.begin() + end);
 
+    #pragma omp parallel for
     for (size_t i = start; i < end; ++i) {
         instanceVector[i] = std::move(tempInstance[indices[i - start] - start]);
         perm[i] = tempPerm[indices[i - start] - start];
@@ -73,15 +75,9 @@ void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size
 }
 
 // This is wrapper for sorting fragment of the object vector. This calls coreSortGeneric based on vector data type. 
-std::vector<size_t> AnyColumn::sort(std::vector<size_t>& perm, size_t start, size_t end) {
+void AnyColumn::sort(std::vector<size_t>& perm, size_t start, size_t end) {
     if (start >= end || start >= perm.size() || end > perm.size()) {
         std::cerr << "Invalid range: start=" << start << ", end=" << end << "\n";
-        return perm; // No sorting if the range is invalid
-    }
-    for (size_t i = start; i < end; ++i) {
-        if (perm[i] >= perm.size()) {
-            std::cerr << "ERROR: perm[" << i << "] = " << perm[i] << " is out of bounds!\n";
-        }
     }
 
     if (!_intVector.empty()) {
@@ -93,8 +89,6 @@ std::vector<size_t> AnyColumn::sort(std::vector<size_t>& perm, size_t start, siz
     else if (!_stringVector.empty()) {
         coreSortGeneric(_stringVector, perm, start, end);
     }
-
-    return perm;
 }
 
 // Templated function to compute duplicate entries making shards of full vector. This is done after vector is sorted.
@@ -143,6 +137,7 @@ std::vector<std::pair<size_t, size_t>> AnyColumn::ReShard(std::vector<std::pair<
 
 // This function applys permutation or swapping vector based on how previous vectors were sorted. 
 // This sort of forward propogates previous vector sorts. 
+
 void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, size_t end)
 {
     if (start >= end || start >= perm.size() || end > perm.size()) {
@@ -152,18 +147,21 @@ void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, 
     if (!_intVector.empty())
     {
         std::vector<int> temp(_intVector);
+#pragma omp parallel for
         for (size_t i = start; i < end; ++i)
             _intVector[i] = temp[perm[i]];
     }
     else if (!_doubleVector.empty())
     {
         std::vector<double> temp(_doubleVector);
+#pragma omp parallel for
         for (size_t i = start; i < end; ++i)
             _doubleVector[i] = temp[perm[i]];
     }
     else if (!_stringVector.empty())
     {
         std::vector<std::string> temp(_stringVector);
+#pragma omp parallel for
         for (size_t i = start; i < end; ++i)
             _stringVector[i] = temp[perm[i]];
     }

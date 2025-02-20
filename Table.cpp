@@ -23,19 +23,13 @@ void Table::sort() {
     shardsVect.emplace_back(0, _rows);
 
     for (auto it = _columns.begin(); it != _columns.end(); ++it, ++i) {
-        if (i == 0) {
-            for (size_t j = 0; j < shardsVect.size(); j++) {
-                std::vector<size_t> tmp = it->sort(perm, shardsVect[j].first, shardsVect[j].second);
-            }
-            shardsVect = it->ReShard(shardsVect);
-        }
-        else {
+        if (i > 0) {
             it->applyPermutation(perm, 0, _rows);
-            for (size_t j = 0; j < shardsVect.size(); j++) {
-                std::vector<size_t> tmp = it->sort(perm, shardsVect[j].first, shardsVect[j].second);
-            }
-            shardsVect = it->ReShard(shardsVect);
         }
+        for (size_t j = 0; j < shardsVect.size(); j++) {
+            it->sort(perm, shardsVect[j].first, shardsVect[j].second);
+        }
+        shardsVect = it->ReShard(shardsVect);
     }
 }
 
