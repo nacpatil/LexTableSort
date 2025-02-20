@@ -59,7 +59,7 @@ void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size
     std::iota(indices.begin(), indices.end(), start);  // Generate indices [start, ..., end-1]
 
     // Parallel sort indices based on instanceVector values
-    std::sort(std::execution::par, indices.begin(), indices.end(), [&](size_t i, size_t j) {
+    std::stable_sort(std::execution::par, indices.begin(), indices.end(), [&](size_t i, size_t j) {
         return instanceVector[i] < instanceVector[j];
     });
 

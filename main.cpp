@@ -7,8 +7,6 @@
 #include <random>
 #include <omp.h>
 #include <chrono>
-
-
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
 
