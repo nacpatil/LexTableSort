@@ -18,7 +18,8 @@ private:
 
 public:
     // Constructors
-     AnyColumn(const std::vector<int>& values); 
+     //AnyColumn(const std::vector<int>& values); 
+     AnyColumn(std::vector<int>&& values);
     AnyColumn(const std::vector<double>& values);
     AnyColumn(const std::vector<std::string>& values);
 

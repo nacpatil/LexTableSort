@@ -8,10 +8,12 @@
 #include <numeric>
 #include <algorithm>
 #include <variant>
-  
+#include <execution>
+
 
 // Constructor Implementations
-AnyColumn::AnyColumn(const std::vector<int>& values) : _intVector(values) { _size = values.size(); }
+//AnyColumn::AnyColumn(const std::vector<int>& values) : _intVector(values) { _size = values.size(); }
+AnyColumn::AnyColumn(     std::vector<int>&& values) : _intVector(std::move(values)) {  _size = _intVector.size();}
 AnyColumn::AnyColumn(const std::vector<double>& values) : _doubleVector(values) { _size = values.size(); }
 AnyColumn::AnyColumn(const std::vector<std::string>& values) : _stringVector(values) { _size = values.size(); }
 
@@ -45,28 +47,29 @@ void AnyColumn::printElement(size_t index, std::ostream& stream) const
 }
 
 // This is a template to sort fragment of the object vector and update permutation index vector for the fragment. 
-template <typename T> void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size_t>& perm,
-    size_t start, size_t end) 
+template <typename T>
+void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size_t>& perm,
+    size_t start, size_t end)
 {
-    if (instanceVector.empty()) return;
+    if (instanceVector.empty() || start >= end) return;
 
-    // create a index vector for current fragment in sorting.
+    // Create an index vector for sorting
     std::vector<size_t> indices(end - start);
     std::iota(indices.begin(), indices.end(), start);  // Generate indices [start, ..., end-1]
 
-    // Sort indices based on the corresponding data values
-    std::sort(indices.begin(), indices.end(), [&](size_t i, size_t j) {
+    // Parallel sort indices based on instanceVector values
+    std::stable_sort(std::execution::par, indices.begin(), indices.end(), [&](size_t i, size_t j) {
         return instanceVector[i] < instanceVector[j];
     });
 
-    // Apply sorted order to the original vector and perm
-    std::vector<T> temp(instanceVector);
-    std::vector<size_t> tempPerm(perm);
+    std::vector<T> tempInstance(instanceVector.begin() + start, instanceVector.begin() + end);
+    std::vector<size_t> tempPerm(perm.begin() + start, perm.begin() + end);
 
     for (size_t i = start; i < end; ++i) {
-        instanceVector[i] = temp[indices[i - start]];
-        perm[i] = tempPerm[indices[i - start]];
+        instanceVector[i] = std::move(tempInstance[indices[i - start] - start]);
+        perm[i] = tempPerm[indices[i - start] - start];
     }
+
 }
 
 // This is wrapper for sorting fragment of the object vector. This calls coreSortGeneric based on vector data type. 
