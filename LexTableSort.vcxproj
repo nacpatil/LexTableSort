@@ -105,6 +105,7 @@
     <ClInclude Include="AnyColumn.h" />
     <ClInclude Include="doctest.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Performance.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="Tests.h" />
   </ItemGroup>
@@ -114,6 +115,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Performance.cpp" />
     <ClCompile Include="Table.cpp" />
     <ClCompile Include="Tests.cpp" />
   </ItemGroup>
