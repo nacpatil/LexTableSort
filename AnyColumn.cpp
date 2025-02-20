@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "AnyColumn.h"
 #include <iostream>
 #include <string>
@@ -59,11 +59,13 @@ void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size
     std::iota(indices.begin(), indices.end(), start);  // Generate indices [start, ..., end-1]
 
     // Parallel sort indices based on instanceVector values
-    std::stable_sort(std::execution::par, indices.begin(), indices.end(), [&](size_t i, size_t j) {
+    std::sort(std::execution::par, indices.begin(), indices.end(), [&](size_t i, size_t j) {
         return instanceVector[i] < instanceVector[j];
     });
 
-    std::vector<T> tempInstance(instanceVector.begin() + start, instanceVector.begin() + end);
+    std::vector<T> tempInstance;
+    tempInstance.reserve(end - start);
+    tempInstance.assign(instanceVector.begin() + start, instanceVector.begin() + end);
     std::vector<size_t> tempPerm(perm.begin() + start, perm.begin() + end);
 
     #pragma omp parallel for
@@ -185,6 +187,5 @@ bool AnyColumn::areEqual(const AnyColumn& other) const {
     if (!_stringVector.empty() && !other._stringVector.empty()) {
         return _stringVector == other._stringVector;
     }
-
     return false; // Mismatched types
 }

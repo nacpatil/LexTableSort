@@ -14,8 +14,10 @@ Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
 }
 
 // Sort the rows of the table, with the first column being the most significant
+
 void Table::sort() {
-    if (_vectors_count == 0) { return; }; 
+    if (_vectors_count == 0) { return; }
+
     int i = 0;
     std::vector<size_t> perm(_rows);
     std::iota(perm.begin(), perm.end(), 0);
@@ -23,6 +25,9 @@ void Table::sort() {
     shardsVect.emplace_back(0, _rows);
 
     for (auto it = _columns.begin(); it != _columns.end(); ++it, ++i) {
+        // Log message for the column being processed
+        std::cout << "\rProcessing column vector " << i << "..." << std::flush;
+
         if (i > 0) {
             it->applyPermutation(perm, 0, _rows);
         }
@@ -30,6 +35,9 @@ void Table::sort() {
             it->sort(perm, shardsVect[j].first, shardsVect[j].second);
         }
         shardsVect = it->ReShard(shardsVect);
+
+        // Clear the console log after processing
+        std::cout << "\r\033[K" << std::flush; // Clears the current line
     }
 }
 
