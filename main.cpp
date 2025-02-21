@@ -1,10 +1,9 @@
-﻿ 
-#include "pch.h"
+﻿
 #include <iostream>
 #include "../AnyColumn.h"
 #include "../Table.h"
 #include "../Tests.h"
-#include "../Performance.h"
+#include "../PerformanceTest.h"
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
 
@@ -32,7 +31,7 @@ int main() {
 
     Tests().runDocTests();  // Run all test cases 
 
-    Performance().runPerformance();
+    PerformanceTest().runPerformance();
 
 
     return 0;

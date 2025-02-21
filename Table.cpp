@@ -14,7 +14,6 @@ Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
 }
 
 // Sort the rows of the table, with the first column being the most significant
-
 void Table::sort() {
     if (_vectors_count == 0) { return; }
 
