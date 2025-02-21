@@ -1,5 +1,4 @@
-﻿#include "pch.h"
-#include "AnyColumn.h"
+﻿#include "AnyColumn.h"
 #include <iostream>
 #include <string>
 #include <initializer_list>

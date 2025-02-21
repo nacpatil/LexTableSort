@@ -1,9 +1,9 @@
 ﻿
 #include <iostream>
-#include "../AnyColumn.h"
-#include "../Table.h"
-#include "../Tests.h"
-#include "../PerformanceTest.h"
+#include "AnyColumn.h"
+#include "Table.h"
+#include "Tests.h"
+#include "PerformanceTest.h"
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
 
