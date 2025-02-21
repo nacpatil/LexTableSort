@@ -9,6 +9,7 @@
 #include <variant>
 #include <execution>
 #include <omp.h>
+#include <cstddef>  // For ptrdiff_t
 
 
 // Constructor Implementations
@@ -68,9 +69,10 @@ void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size
     std::vector<size_t> tempPerm(perm.begin() + start, perm.begin() + end);
 
     #pragma omp parallel for
-    for (size_t i = start; i < end; ++i) {
-        instanceVector[i] = std::move(tempInstance[indices[i - start] - start]);
-        perm[i] = tempPerm[indices[i - start] - start];
+    for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
+        size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
+        instanceVector[index] = std::move(tempInstance[indices[index - start] - start]);
+        perm[index] = tempPerm[indices[index - start] - start];
     }
 
 }
@@ -148,23 +150,30 @@ void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, 
     if (!_intVector.empty())
     {
         std::vector<int> temp(_intVector);
-#pragma omp parallel for
-        for (size_t i = start; i < end; ++i)
-            _intVector[i] = temp[perm[i]];
+        #pragma omp parallel for
+        for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
+            size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
+            _intVector[index] = temp[perm[index]];  // Access using size_t
+        }
+
     }
     else if (!_doubleVector.empty())
     {
         std::vector<double> temp(_doubleVector);
 #pragma omp parallel for
-        for (size_t i = start; i < end; ++i)
-            _doubleVector[i] = temp[perm[i]];
+        for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
+            size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
+            _doubleVector[index] = temp[perm[index]];  // Access using size_t
+        }
     }
     else if (!_stringVector.empty())
     {
         std::vector<std::string> temp(_stringVector);
-#pragma omp parallel for
-        for (size_t i = start; i < end; ++i)
-            _stringVector[i] = temp[perm[i]];
+        #pragma omp parallel for
+        for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
+            size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
+            _stringVector[index] = temp[perm[index]];  // Access using size_t
+        }
     }
 }
 

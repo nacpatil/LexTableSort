@@ -20,13 +20,34 @@ set(SOURCES
     Tests.cpp
 )
 
-# Add executable target
+# Add executable target FIRST
 add_executable(LexSortingApp ${SOURCES})
 
-# Link libraries if needed (e.g., for testing frameworks)
-# target_link_libraries(LexSortingApp PRIVATE some_library)
+# Detect if MSVC (Visual Studio) is being used
+if(MSVC)
+    # Maximum optimization for Visual Studio
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /GL /arch:AVX2 /fp:fast /Ot /Ob2 /Oi /GT /LTCG")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /O2 /GL /arch:AVX2 /fp:fast /Ot /Ob2 /Oi /GT /LTCG")
+
+    # Disable debug info for release build
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /DEBUG:NONE")
+
+    # Enable Link-Time Code Generation (LTCG) AFTER defining the target
+    set_target_properties(LexSortingApp PROPERTIES LINK_FLAGS "/LTCG")
+else()
+    # Maximum optimization for GCC/Clang (Linux, macOS)
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -flto")
+    set(CMAKE_C_FLAGS_RELEASE "-O3 -march=native -flto")
+endif()
+
+# Enable Link Time Optimization globally
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
+# Enable OpenMP for parallel processing
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(LexSortingApp OpenMP::OpenMP_CXX)
+endif()
 
 # Enable testing if doctest.h is used
 enable_testing()
-
-#add_subdirectory("lexSortingBuild")

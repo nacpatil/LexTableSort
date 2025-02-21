@@ -4,7 +4,7 @@
 #include <chrono>
 
 void PerformanceTest::runPerformance() {
-    size_t numRows = 30000000;  // Number of rows
+    size_t numRows = 300000000;  // Number of rows
 
     std::cout << "\n\n=============\nRunning performance test on large data with vector size : " << numRows << " x 7 columns" << "\n";
     std::cout << "Generating permutated/mismashed large size table.\n";
@@ -38,8 +38,9 @@ std::vector<int> PerformanceTest::generateSequentialIntVector(size_t size, int t
     std::vector<int> values(size);
 
 #pragma omp parallel for
-    for (size_t i = 0; i < size; ++i) {
-        values[i] = (thisNumber + i - 1) % 9000 + 1;
+    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(size); ++i) {
+        size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
+        values[index] = (thisNumber + index - 1) % 9000 + 1;
     }
     return values;
 }
