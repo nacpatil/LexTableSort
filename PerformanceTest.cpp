@@ -17,7 +17,8 @@ void PerformanceTest::runPerformance(std::string type) {
     resultFile << "NumRows,SortTime(seconds)\n";
 
     // Run performance tests for different row sizes from 1 million to 20 million with a 2 million gap
-    for (size_t numRows = 1000000; numRows <= 20000000; numRows += 2000000) {
+    std::vector<size_t> rowSizes = { 1000000, 3000000, 5000000, 7000000, 10000000, 15000000, 20000000 };
+    for (size_t numRows : rowSizes) {
         std::cout << "\n\n=============\nRunning performance test on large data with vector size : " << numRows << " x 7 columns\n";
         std::cout << "Generating permutated/mismashed large size table.\n";
 
