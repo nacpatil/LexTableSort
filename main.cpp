@@ -30,8 +30,8 @@ int main() {
     std::cout << "=======================Run Complete \n\n";
 
     Tests().runDocTests();  // Run all test cases 
-
-    PerformanceTest().runPerformance();
+    PerformanceTest().runPerformance("perm");
+    PerformanceTest().runPerformance("comp");
 
 
     return 0;

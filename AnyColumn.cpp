@@ -116,7 +116,9 @@ template <typename T> std::vector<std::pair<size_t, size_t>> AnyColumn::reShardG
                 currentStart = i;
             }
         }
-        newShards.emplace_back(currentStart, end);
+        if ((end - currentStart) > 1) {
+            newShards.emplace_back(currentStart, end);
+        }
     }
 
     existingShards = newShards;
@@ -160,7 +162,7 @@ void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, 
     else if (!_doubleVector.empty())
     {
         std::vector<double> temp(_doubleVector);
-#pragma omp parallel for
+        #pragma omp parallel for
         for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
             size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
             _doubleVector[index] = temp[perm[index]];  // Access using size_t
@@ -176,6 +178,24 @@ void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, 
         }
     }
 }
+
+ 
+bool AnyColumn::isGreater(size_t i, size_t j) {
+    if (!_intVector.empty()) {
+        if (_intVector[i] < _intVector[j]) return true;
+        if (_intVector[i] > _intVector[j]) return false;
+    }
+    if (!_doubleVector.empty()) {
+        if (_doubleVector[i] < _doubleVector[j]) return true;
+        if (_doubleVector[i] > _doubleVector[j]) return false;
+    }
+    if (!_stringVector.empty()) {
+        if (_stringVector[i] < _stringVector[j]) return true;
+        if (_stringVector[i] > _stringVector[j]) return false;
+    }
+    return false; // They are equal in this column type.
+}
+
 
 
 // This is used to compare two vectors. Useful for quick testing. 

@@ -1,5 +1,6 @@
 #include "Table.h"
-
+#include <algorithm>
+#include <execution>
 
 // Constructor
 Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
@@ -12,10 +13,19 @@ Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
     }
 }
 
-// Sort the rows of the table, with the first column being the most significant
-void Table::sort() {
-    if (_vectors_count == 0) { return; }
+void Table::comparatorSort() {
+    std::vector<size_t> perm(_rows);
+    std::iota(perm.begin(), perm.end(), 0);
+    std::stable_sort(std::execution::par, perm.begin(), perm.end(), [&](size_t i, size_t j) {
+        return isGreater(i, j);
+    });
+    for (auto it = _columns.begin(); it != _columns.end(); ++it) {
+        it->applyPermutation(perm, 0, _rows);
+    }
+}
 
+ 
+void Table::permSort() {
     int i = 0;
     std::vector<size_t> perm(_rows);
     std::iota(perm.begin(), perm.end(), 0);
@@ -37,6 +47,12 @@ void Table::sort() {
         // Clear the console log after processing
         std::cout << "\r\033[K" << std::flush; // Clears the current line
     }
+}
+// Sort the rows of the table, with the first column being the most significant
+void Table::sort(std::string type) {
+    if (_vectors_count == 0) { return; }
+    if (type == "perm") {permSort(); }
+    if (type == "comp") { comparatorSort(); }
 }
 
 // Get the number of rows
@@ -77,5 +93,15 @@ bool Table::isEqual(const Table& other) const {
 
     return true;  // If loop completes, all columns are equal
 }
-
  
+bool Table::isGreater(size_t i, size_t j) {
+    for (auto it = _columns.begin(); it != _columns.end(); ++it) {
+        // Check if one row is less than the other in this column.
+        if (it->isGreater(i, j))
+            return true;  // i is less than j.
+        else if (it->isGreater(j, i))
+            return false; // j is less than i.
+        // If equal, move to the next column.
+    }
+    return false; // All columns are equal.
+}

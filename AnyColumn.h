@@ -38,5 +38,7 @@ public:
     // Apply permutation to reorder the column
     void applyPermutation(const std::vector<size_t>& perm, size_t start, size_t end);
 
+    bool isGreater(size_t i, size_t j);
     bool areEqual(const AnyColumn& other) const;
+
 };

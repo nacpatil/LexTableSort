@@ -3,35 +3,56 @@
 #include <omp.h>
 #include <chrono>
 
-void PerformanceTest::runPerformance() {
-    size_t numRows = 300000000;  // Number of rows
+#include <fstream>
 
-    std::cout << "\n\n=============\nRunning performance test on large data with vector size : " << numRows << " x 7 columns" << "\n";
-    std::cout << "Generating permutated/mismashed large size table.\n";
+void PerformanceTest::runPerformance(std::string type) {
+    // Open file to write results
+    std::ofstream resultFile("performance_results_"+type+".csv");
+    if (!resultFile) {
+        std::cerr << "Error opening file for writing results!" << std::endl;
+        return;
+    }
 
-    Table randomIntTable = {
-        AnyColumn(generateSequentialIntVector(numRows,2)),
-        AnyColumn(generateSequentialIntVector(numRows,1)),
-        AnyColumn(generateSequentialIntVector(numRows,3)),
-        AnyColumn(generateSequentialIntVector(numRows,4)),
-        AnyColumn(generateSequentialIntVector(numRows,5)),
-        AnyColumn(generateSequentialIntVector(numRows,6)),
-        AnyColumn(generateSequentialIntVector(numRows,7))
-    };
-    std::cout << "Done generating input table.\n";
+    // Write column headers to the file
+    resultFile << "NumRows,SortTime(seconds)\n";
 
-    auto sort_start_time = std::chrono::high_resolution_clock::now();
+    // Run performance tests for different row sizes from 1 million to 20 million with a 2 million gap
+    for (size_t numRows = 1000000; numRows <= 20000000; numRows += 2000000) {
+        std::cout << "\n\n=============\nRunning performance test on large data with vector size : " << numRows << " x 7 columns\n";
+        std::cout << "Generating permutated/mismashed large size table.\n";
 
-    randomIntTable.sort();
+        // Generate random data (you should replace generateSequentialIntVector with actual data generation logic)
+        Table randomIntTable = {
+            AnyColumn(generateSequentialIntVector(numRows, 2)),
+            AnyColumn(generateSequentialIntVector(numRows, 1)),
+            AnyColumn(generateSequentialIntVector(numRows, 3)),
+            AnyColumn(generateSequentialIntVector(numRows, 4)),
+            AnyColumn(generateSequentialIntVector(numRows, 5)),
+            AnyColumn(generateSequentialIntVector(numRows, 6)),
+            AnyColumn(generateSequentialIntVector(numRows, 7))
+        };
+        std::cout << "Done generating input table.\n";
 
-    auto sort_end_time = std::chrono::high_resolution_clock::now();
+        // Measure sorting time
+        auto sort_start_time = std::chrono::high_resolution_clock::now();
 
-    std::chrono::duration<double> sort_duration = sort_end_time - sort_start_time;
+        randomIntTable.sort("perm");
 
-    std::cout << "Done generating random vector \n";
-    std::cout << "Sorting time: " << sort_duration.count() << " seconds\n";
+        auto sort_end_time = std::chrono::high_resolution_clock::now();
 
+        std::chrono::duration<double> sort_duration = sort_end_time - sort_start_time;
+
+        std::cout << "Sorting time: " << sort_duration.count() << " seconds\n";
+
+        // Write results to the file in columns (NumRows, SortTime)
+        resultFile << numRows << "," << sort_duration.count() << "\n";
+    }
+
+    // Close the file after writing
+    resultFile.close();
+    std::cout << "Results saved to performance_results.csv\n";
 }
+
 
 
 std::vector<int> PerformanceTest::generateSequentialIntVector(size_t size, int thisNumber) {

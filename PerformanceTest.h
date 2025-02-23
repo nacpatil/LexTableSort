@@ -4,7 +4,7 @@
 class PerformanceTest 
 {
 	public: 
-		void runPerformance();
+		void runPerformance(std::string type);
 		std::vector<int> generateSequentialIntVector(size_t size, int thisNumber);
 };
 
