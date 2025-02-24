@@ -11,7 +11,7 @@
 #include <omp.h>
 #include <cstddef>  // For ptrdiff_t
 
-
+bool doneSorting = false;
 // Constructor Implementations
 //AnyColumn::AnyColumn(const std::vector<int>& values) : _intVector(values) { _size = values.size(); }
 AnyColumn::AnyColumn(     std::vector<int>&& values) : _intVector(std::move(values)) {  _size = _intVector.size();}
@@ -94,24 +94,25 @@ void AnyColumn::sort(std::vector<size_t>& perm, size_t start, size_t end) {
 }
 
 // Templated function to compute duplicate entries making shards of full vector. This is done after vector is sorted.
-template <typename T> std::vector<std::pair<size_t, size_t>> AnyColumn::reShardGeneric(
-    const std::vector<T>& instanceVector, std::vector<std::pair<size_t, size_t>>& existingShards)
+template <typename T> std::vector<std::pair<size_t, size_t>> AnyColumn::reShardGeneric(  const std::vector<T>& instanceVector, std::vector<std::pair<size_t, size_t>>& existingShards)
 {
+    if (existingShards.empty() || existingShards.size() == _size) {
+        return {};
+    }
+
     std::vector<std::pair<size_t, size_t>> newShards;
+    newShards.reserve(existingShards.size());
 
     for (const auto& shard : existingShards) {
         size_t start = shard.first;
         size_t end = shard.second;
 
-        if (start >= end || end > instanceVector.size()) {
-            std::cerr << "Invalid shard: {" << start << ", " << end << "} ignored.\n";
-            continue;
-        }
-
         size_t currentStart = start;
         for (size_t i = start + 1; i < end; ++i) {
             if (instanceVector[i] != instanceVector[i - 1]) {
-                newShards.emplace_back(currentStart, i);
+                if ((i - currentStart) > 1) {
+                    newShards.emplace_back(currentStart, i);
+                }
                 currentStart = i;
             }
         }
@@ -120,9 +121,10 @@ template <typename T> std::vector<std::pair<size_t, size_t>> AnyColumn::reShardG
         }
     }
 
-    existingShards = newShards;
-    return newShards;
+    existingShards = std::move(newShards);
+    return existingShards;
 }
+
 
 // this is wrapper to compute duplicate entries making shards of full vector. This is done after vector is sorted.
 std::vector<std::pair<size_t, size_t>> AnyColumn::ReShard(std::vector<std::pair<size_t, size_t>>& existingShards) {

@@ -48,6 +48,8 @@ void Table::permSort() {
         std::cout << "\r\033[K" << std::flush; // Clears the current line
     }
 }
+
+
 // Sort the rows of the table, with the first column being the most significant
 void Table::sort(std::string type) {
     if (_vectors_count == 0) { return; }
