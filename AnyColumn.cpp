@@ -1,5 +1,4 @@
-#include "pch.h"
-#include "AnyColumn.h"
+﻿#include "AnyColumn.h"
 #include <iostream>
 #include <string>
 #include <initializer_list>
@@ -8,12 +7,15 @@
 #include <numeric>
 #include <algorithm>
 #include <variant>
-  
+#include <execution>
+#include <omp.h>
+#include <cstddef>  // For ptrdiff_t
+
 
 // Constructor Implementations
-AnyColumn::AnyColumn(const std::vector<int>& values) : _intVector(values) { _size = values.size(); }
-AnyColumn::AnyColumn(const std::vector<double>& values) : _doubleVector(values) { _size = values.size(); }
-AnyColumn::AnyColumn(const std::vector<std::string>& values) : _stringVector(values) { _size = values.size(); }
+AnyColumn::AnyColumn(std::vector<int>&& values) : _intVector(std::move(values)) { _size = _intVector.size(); isIntNonEmpty = (_size > 0);}
+AnyColumn::AnyColumn(const std::vector<double>& values) : _doubleVector(values) { _size = values.size(); isDoubleNonEmpty = (_size > 0);}
+AnyColumn::AnyColumn(const std::vector<std::string>& values) : _stringVector(values) { _size = values.size(); isStringNonEmpty = (_size > 0);}
 
 // Only one of the fields will be non-empty.
 std::vector<int> _intVector;
@@ -39,99 +41,99 @@ size_t AnyColumn::size() const
 
 void AnyColumn::printElement(size_t index, std::ostream& stream) const
 {
-    if (_intVector.size() > 0) stream << _intVector[index];
-    if (_doubleVector.size() > 0) stream << _doubleVector[index];
-    if (_stringVector.size() > 0) stream << _stringVector[index];
+    if (isIntNonEmpty) stream << _intVector[index];
+    if (isDoubleNonEmpty) stream << _doubleVector[index];
+    if (isStringNonEmpty) stream << _stringVector[index];
 }
 
 // This is a template to sort fragment of the object vector and update permutation index vector for the fragment. 
-template <typename T> void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size_t>& perm,
-    size_t start, size_t end) 
+template <typename T>
+void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size_t>& perm,
+    size_t start, size_t end)
 {
-    if (instanceVector.empty()) return;
+    if (instanceVector.empty() || start >= end) return;
 
-    // create a index vector for current fragment in sorting.
+    // Create an index vector for sorting
     std::vector<size_t> indices(end - start);
     std::iota(indices.begin(), indices.end(), start);  // Generate indices [start, ..., end-1]
 
-    // Sort indices based on the corresponding data values
-    std::sort(indices.begin(), indices.end(), [&](size_t i, size_t j) {
+    // Parallel sort indices based on instanceVector values
+    std::stable_sort(std::execution::par, indices.begin(), indices.end(), [&](size_t i, size_t j) {
         return instanceVector[i] < instanceVector[j];
     });
 
-    // Apply sorted order to the original vector and perm
-    std::vector<T> temp(instanceVector);
-    std::vector<size_t> tempPerm(perm);
+    std::vector<T> tempInstance;
+    tempInstance.reserve(end - start);
+    tempInstance.assign(instanceVector.begin() + start, instanceVector.begin() + end);
+    std::vector<size_t> tempPerm(perm.begin() + start, perm.begin() + end);
 
-    for (size_t i = start; i < end; ++i) {
-        instanceVector[i] = temp[indices[i - start]];
-        perm[i] = tempPerm[indices[i - start]];
+     for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
+        size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
+        instanceVector[index] = std::move(tempInstance[indices[index - start] - start]);
+        perm[index] = tempPerm[indices[index - start] - start];
     }
+
 }
 
 // This is wrapper for sorting fragment of the object vector. This calls coreSortGeneric based on vector data type. 
-std::vector<size_t> AnyColumn::sort(std::vector<size_t>& perm, size_t start, size_t end) {
+void AnyColumn::sort(std::vector<size_t>& perm, size_t start, size_t end) {
     if (start >= end || start >= perm.size() || end > perm.size()) {
         std::cerr << "Invalid range: start=" << start << ", end=" << end << "\n";
-        return perm; // No sorting if the range is invalid
-    }
-    for (size_t i = start; i < end; ++i) {
-        if (perm[i] >= perm.size()) {
-            std::cerr << "ERROR: perm[" << i << "] = " << perm[i] << " is out of bounds!\n";
-        }
     }
 
-    if (!_intVector.empty()) {
+    if (isIntNonEmpty) {
         coreSortGeneric(_intVector, perm, start, end);
     }
-    else if (!_doubleVector.empty()) {
+    else if (isDoubleNonEmpty) {
         coreSortGeneric(_doubleVector, perm, start, end);
     }
-    else if (!_stringVector.empty()) {
+    else if (isStringNonEmpty) {
         coreSortGeneric(_stringVector, perm, start, end);
     }
-
-    return perm;
 }
 
 // Templated function to compute duplicate entries making shards of full vector. This is done after vector is sorted.
-template <typename T> std::vector<std::pair<size_t, size_t>> AnyColumn::reShardGeneric(
-    const std::vector<T>& instanceVector, std::vector<std::pair<size_t, size_t>>& existingShards)
+template <typename T> std::vector<std::pair<size_t, size_t>> AnyColumn::reShardGeneric(  const std::vector<T>& instanceVector, std::vector<std::pair<size_t, size_t>>& existingShards)
 {
+    if (existingShards.empty() || existingShards.size() == _size) {
+        return {};
+    }
+
     std::vector<std::pair<size_t, size_t>> newShards;
+    newShards.reserve(existingShards.size());
 
     for (const auto& shard : existingShards) {
         size_t start = shard.first;
         size_t end = shard.second;
 
-        if (start >= end || end > instanceVector.size()) {
-            std::cerr << "Invalid shard: {" << start << ", " << end << "} ignored.\n";
-            continue;
-        }
-
         size_t currentStart = start;
         for (size_t i = start + 1; i < end; ++i) {
             if (instanceVector[i] != instanceVector[i - 1]) {
-                newShards.emplace_back(currentStart, i);
+                if ((i - currentStart) > 1) {
+                    newShards.emplace_back(currentStart, i);
+                }
                 currentStart = i;
             }
         }
-        newShards.emplace_back(currentStart, end);
+        if ((end - currentStart) > 1) {
+            newShards.emplace_back(currentStart, end);
+        }
     }
 
-    existingShards = newShards;
-    return newShards;
+    existingShards = std::move(newShards);
+    return existingShards;
 }
+
 
 // this is wrapper to compute duplicate entries making shards of full vector. This is done after vector is sorted.
 std::vector<std::pair<size_t, size_t>> AnyColumn::ReShard(std::vector<std::pair<size_t, size_t>>& existingShards) {
-    if (!_intVector.empty()) {
+    if (isIntNonEmpty) {
         return reShardGeneric(_intVector, existingShards);
     }
-    else if (!_doubleVector.empty()) {
+    else if (isDoubleNonEmpty) {
         return reShardGeneric(_doubleVector, existingShards);
     }
-    else if (!_stringVector.empty()) {
+    else if (isStringNonEmpty) {
         return reShardGeneric(_stringVector, existingShards);
     }
     return {};  // Return empty if no data is available
@@ -142,29 +144,54 @@ std::vector<std::pair<size_t, size_t>> AnyColumn::ReShard(std::vector<std::pair<
 // This sort of forward propogates previous vector sorts. 
 void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, size_t end)
 {
-    if (start >= end || start >= perm.size() || end > perm.size()) {
-        return; // No permutation needed if range is invalid
-    }
 
-    if (!_intVector.empty())
+    if (isIntNonEmpty)
     {
         std::vector<int> temp(_intVector);
-        for (size_t i = start; i < end; ++i)
-            _intVector[i] = temp[perm[i]];
+        //#pragma omp parallel for
+        for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
+            size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
+            _intVector[index] = temp[perm[index]];  // Access using size_t
+        }
     }
-    else if (!_doubleVector.empty())
+    else if (isDoubleNonEmpty)
     {
         std::vector<double> temp(_doubleVector);
-        for (size_t i = start; i < end; ++i)
-            _doubleVector[i] = temp[perm[i]];
+        #pragma omp parallel for
+        for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
+            size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
+            _doubleVector[index] = temp[perm[index]];  // Access using size_t
+        }
     }
-    else if (!_stringVector.empty())
+    else if (isStringNonEmpty)
     {
         std::vector<std::string> temp(_stringVector);
-        for (size_t i = start; i < end; ++i)
-            _stringVector[i] = temp[perm[i]];
+        #pragma omp parallel for
+        for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
+            size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
+            _stringVector[index] = temp[perm[index]];  // Access using size_t
+        }
     }
 }
+
+  
+int8_t  AnyColumn::compare(size_t i, size_t j) {
+    if (isIntNonEmpty) {
+        if (_intVector[i] < _intVector[j]) return -1;
+        if (_intVector[i] > _intVector[j]) return 1;
+    }
+    if (isDoubleNonEmpty) {
+        if (_doubleVector[i] < _doubleVector[j]) return -1;
+        if (_doubleVector[i] > _doubleVector[j]) return 1;
+    }
+    if (isStringNonEmpty) {
+        if (_stringVector[i] < _stringVector[j]) return -1;
+        if (_stringVector[i] > _stringVector[j]) return 1;
+    }
+    return 0; // They are equal.
+}
+
+
 
 
 // This is used to compare two vectors. Useful for quick testing. 
@@ -173,7 +200,6 @@ bool AnyColumn::areEqual(const AnyColumn& other) const {
     if (_size != other._size) {
         return false; // Different sizes, can't be equal
     }
-
     // Compare based on which vector is used
     if (!_intVector.empty() && !other._intVector.empty()) {
         return _intVector == other._intVector;
@@ -184,6 +210,5 @@ bool AnyColumn::areEqual(const AnyColumn& other) const {
     if (!_stringVector.empty() && !other._stringVector.empty()) {
         return _stringVector == other._stringVector;
     }
-
     return false; // Mismatched types
 }

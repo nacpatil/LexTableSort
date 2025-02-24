@@ -11,6 +11,9 @@ private:
     std::vector<double> _doubleVector;
     std::vector<std::string> _stringVector;
     size_t _size;
+    bool isIntNonEmpty = false;
+    bool isDoubleNonEmpty = false;
+    bool isStringNonEmpty = false;
     template <typename T> void coreSortGeneric(std::vector<T>& data, std::vector<size_t>& perm, size_t start, size_t end);
     template <typename T> std::vector<std::pair<size_t, size_t>> reShardGeneric( const std::vector<T>& data,
         std::vector<std::pair<size_t, size_t>>& existingShards);
@@ -18,18 +21,20 @@ private:
 
 public:
     // Constructors
-     AnyColumn(const std::vector<int>& values); 
+     //AnyColumn(const std::vector<int>& values); 
+     AnyColumn(std::vector<int>&& values);
     AnyColumn(const std::vector<double>& values);
     AnyColumn(const std::vector<std::string>& values);
 
     // Get the size of the column
     size_t size() const;
 
+
     // Print an element at a given index
     void printElement(size_t index, std::ostream& stream) const;
 
     // Sorts the column within the given range and updates the permutation vector
-    std::vector<size_t> sort(std::vector<size_t>& perm, size_t start, size_t end);
+    void sort(std::vector<size_t>& perm, size_t start, size_t end);
 
     // Resharding function to split based on unique values
     std::vector<std::pair<size_t, size_t>> ReShard(std::vector<std::pair<size_t, size_t>>& existingShards);
@@ -37,5 +42,7 @@ public:
     // Apply permutation to reorder the column
     void applyPermutation(const std::vector<size_t>& perm, size_t start, size_t end);
 
+    int8_t   compare(size_t i, size_t j);
     bool areEqual(const AnyColumn& other) const;
+
 };

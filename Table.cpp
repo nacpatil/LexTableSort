@@ -1,6 +1,6 @@
-#include "pch.h"
 #include "Table.h"
-
+#include <algorithm>
+#include <execution>
 
 // Constructor
 Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
@@ -13,9 +13,41 @@ Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
     }
 }
 
-// Sort the rows of the table, with the first column being the most significant
-void Table::sort() {
-    if (_vectors_count == 0) { return; }; 
+void Table::addColumn(const AnyColumn& newColumn) {
+    // Ensure the new column has the same number of rows
+    if (!_columns.empty() && newColumn.size() != _rows) {
+        throw std::invalid_argument("Error: New column must have the same number of rows as existing columns.");
+    }
+    // If the table was empty, set the number of rows based on the first column added
+    if (_columns.empty()) {
+        _rows = newColumn.size();
+    }
+        // Add the new column to the list
+    _columns.push_back(newColumn);
+
+    // Update the column count
+    _vectors_count++;
+}
+
+
+// Get the number of rows
+size_t Table::numRows() const {
+    return _columns.empty() ? 0 : _columns.cbegin()->size();
+}
+
+void Table::comparatorSort() {
+    std::vector<size_t> perm(_rows);
+    std::iota(perm.begin(), perm.end(), 0);
+    std::stable_sort(std::execution::par, perm.begin(), perm.end(), [&](size_t i, size_t j) {
+        return isGreater(i, j);
+    });
+    for (auto it = _columns.begin(); it != _columns.end(); ++it) {
+        it->applyPermutation(perm, 0, _rows);
+    }
+}
+
+ 
+void Table::permSort() {
     int i = 0;
     std::vector<size_t> perm(_rows);
     std::iota(perm.begin(), perm.end(), 0);
@@ -23,26 +55,31 @@ void Table::sort() {
     shardsVect.emplace_back(0, _rows);
 
     for (auto it = _columns.begin(); it != _columns.end(); ++it, ++i) {
-        if (i == 0) {
-            for (size_t j = 0; j < shardsVect.size(); j++) {
-                std::vector<size_t> tmp = it->sort(perm, shardsVect[j].first, shardsVect[j].second);
-            }
-            shardsVect = it->ReShard(shardsVect);
-        }
-        else {
+        // Log message for the column being processed
+        std::cout << "\rProcessing column vector " << i << "..." << std::flush;
+
+        if (i > 0) {
             it->applyPermutation(perm, 0, _rows);
-            for (size_t j = 0; j < shardsVect.size(); j++) {
-                std::vector<size_t> tmp = it->sort(perm, shardsVect[j].first, shardsVect[j].second);
-            }
-            shardsVect = it->ReShard(shardsVect);
         }
+        for (size_t j = 0; j < shardsVect.size(); j++) {
+            it->sort(perm, shardsVect[j].first, shardsVect[j].second);
+        }
+        shardsVect = it->ReShard(shardsVect);
+        std::cout << "shards count : " << shardsVect.size() << "\n";
+        // Clear the console log after processing
+        std::cout << "\r\033[K" << std::flush; // Clears the current line
     }
 }
 
-// Get the number of rows
-size_t Table::numRows() const {
-    return _columns.empty() ? 0 : _columns.cbegin()->size();
+
+// Sort the rows of the table, with the first column being the most significant
+void Table::sort(std::string type) {
+    if (_vectors_count == 0) { return; }
+    if (type == "perm") {permSort(); }
+    if (type == "comp") { comparatorSort(); }
 }
+
+
 
 // Print table content
 void Table::print(const std::string& str) const {
@@ -77,5 +114,13 @@ bool Table::isEqual(const Table& other) const {
 
     return true;  // If loop completes, all columns are equal
 }
-
  
+
+bool Table::isGreater(size_t i, size_t j) {
+    for (auto it = _columns.begin(); it != _columns.end(); ++it) {
+        int result = it->compare(i, j);
+        if (result < 0) return true;   // i is greater than j
+        else if (result > 0) return false; // j is greater than i
+    }
+    return false; // All columns are equal
+}

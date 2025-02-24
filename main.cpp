@@ -1,11 +1,14 @@
-﻿#include "pch.h"
+﻿
 #include <iostream>
-#include "../AnyColumn.h"
-#include "../Table.h"
-#include "../Tests.h"
-
+#include "AnyColumn.h"
+#include "Table.h"
+#include "Tests.h"
+#include "PerformanceTest.h"
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
+
+// Function to generate a random vector of integers (values between 1 and 6)
+ 
 
 int main() {
 
@@ -25,7 +28,17 @@ int main() {
     // Print after sorting
     table.print("\nAfter sort");  // ? Fixed: `print()` is a method of `Table`
     std::cout << "=======================Run Complete \n\n";
-
     Tests().runDocTests();  // Run all test cases 
+    //PerformanceTest().runPerformance("perm", "rand");
+    PerformanceTest().runPerformance("perm","seq");
+    PerformanceTest().runPerformance("perm", "preSorted");
+    PerformanceTest().runPerformance("comp", "rand");
+    PerformanceTest().runPerformance("comp", "seq");
+    PerformanceTest().runPerformance("comp", "preSorted");  
+    PerformanceTest().runPerformanceOnColumns("perm", "rand", 10000000, 20);
+    PerformanceTest().runPerformanceOnColumns("comp", "rand", 10000000, 20);
+
+ 
+
     return 0;
 }
