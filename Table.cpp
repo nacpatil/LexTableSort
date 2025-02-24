@@ -43,7 +43,7 @@ void Table::permSort() {
             it->sort(perm, shardsVect[j].first, shardsVect[j].second);
         }
         shardsVect = it->ReShard(shardsVect);
-
+        std::cout << "shards count : " << shardsVect.size() << "\n";
         // Clear the console log after processing
         std::cout << "\r\033[K" << std::flush; // Clears the current line
     }

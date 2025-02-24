@@ -2,6 +2,7 @@
 #include <random>
 #include <omp.h>
 #include <chrono>
+#include <random>
 
 #include <fstream>
 
@@ -17,7 +18,8 @@ void PerformanceTest::runPerformance(std::string type) {
     resultFile << "NumRows,SortTime(seconds)\n";
 
     // Run performance tests for different row sizes from 1 million to 20 million with a 2 million gap
-    std::vector<size_t> rowSizes = { 1000000, 3000000, 5000000, 7000000, 10000000, 15000000, 20000000 };
+    std::vector<size_t> rowSizes = { 1000000, 5000000, 10000000, 20000000, 30000000, 50000000, 100000000, 200000000, 300000000, 400000000 };
+    //std::vector<size_t> rowSizes = { 30000000 };
     for (size_t numRows : rowSizes) {
         std::cout << "\n\n=============\nRunning performance test on large data with vector size : " << numRows << " x 7 columns\n";
         std::cout << "Generating permutated/mismashed large size table.\n";
@@ -30,14 +32,18 @@ void PerformanceTest::runPerformance(std::string type) {
             AnyColumn(generateSequentialIntVector(numRows, 4)),
             AnyColumn(generateSequentialIntVector(numRows, 5)),
             AnyColumn(generateSequentialIntVector(numRows, 6)),
-            AnyColumn(generateSequentialIntVector(numRows, 7))
+            AnyColumn(generateSequentialIntVector(numRows, 7)),
+            AnyColumn(generateSequentialIntVector(numRows, 2)),
+            AnyColumn(generateSequentialIntVector(numRows, 1)),
+            AnyColumn(generateSequentialIntVector(numRows, 3)),
+            AnyColumn(generateSequentialIntVector(numRows, 4))
         };
         std::cout << "Done generating input table.\n";
 
         // Measure sorting time
         auto sort_start_time = std::chrono::high_resolution_clock::now();
 
-        randomIntTable.sort("perm");
+        randomIntTable.sort(type);
 
         auto sort_end_time = std::chrono::high_resolution_clock::now();
 
@@ -59,11 +65,21 @@ void PerformanceTest::runPerformance(std::string type) {
 std::vector<int> PerformanceTest::generateSequentialIntVector(size_t size, int thisNumber) {
     std::vector<int> values(size);
 
-#pragma omp parallel for
-    for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(size); ++i) {
-        size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
-        values[index] = (thisNumber + index - 1) % 9000 + 1;
+#pragma omp parallel
+    {
+        // Use a combination of std::random_device and thread-specific info for extra entropy
+        std::random_device rd;
+        unsigned seed = rd() ^ (static_cast<unsigned>(omp_get_thread_num()) +
+            static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count()));
+        std::mt19937 rng(seed);
+        std::uniform_int_distribution<int> dist(1, 100);  // Change range as needed
+
+#pragma omp for
+        for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(size); ++i) {
+            values[i] = dist(rng);
+        }
     }
+
     return values;
 }
 

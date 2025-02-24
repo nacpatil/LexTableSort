@@ -68,8 +68,7 @@ void AnyColumn::coreSortGeneric(std::vector<T>& instanceVector, std::vector<size
     tempInstance.assign(instanceVector.begin() + start, instanceVector.begin() + end);
     std::vector<size_t> tempPerm(perm.begin() + start, perm.begin() + end);
 
-    #pragma omp parallel for
-    for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
+     for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
         size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
         instanceVector[index] = std::move(tempInstance[indices[index - start] - start]);
         perm[index] = tempPerm[indices[index - start] - start];
@@ -152,7 +151,7 @@ void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, 
     if (!_intVector.empty())
     {
         std::vector<int> temp(_intVector);
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for (ptrdiff_t i = start; i < static_cast<ptrdiff_t>(end); ++i) {
             size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
             _intVector[index] = temp[perm[index]];  // Access using size_t
@@ -204,7 +203,7 @@ bool AnyColumn::areEqual(const AnyColumn& other) const {
     if (_size != other._size) {
         return false; // Different sizes, can't be equal
     }
-
+               
     // Compare based on which vector is used
     if (!_intVector.empty() && !other._intVector.empty()) {
         return _intVector == other._intVector;
