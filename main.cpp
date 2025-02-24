@@ -30,9 +30,15 @@ int main() {
     std::cout << "=======================Run Complete \n\n";
 
     Tests().runDocTests();  // Run all test cases 
-    PerformanceTest().runPerformance("perm");
-    PerformanceTest().runPerformance("comp");
+    /*PerformanceTest().runPerformance("perm", "rand");
+    PerformanceTest().runPerformance("perm","seq");
+    PerformanceTest().runPerformance("perm", "preSorted");
+    PerformanceTest().runPerformance("comp", "rand");
+    PerformanceTest().runPerformance("comp", "seq");
+    PerformanceTest().runPerformance("comp", "preSorted"); */
 
+    PerformanceTest().runPerformance("perm", "preSorted");
+    PerformanceTest().runPerformance("comp", "preSorted");
 
     return 0;
 }
