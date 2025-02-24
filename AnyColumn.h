@@ -11,6 +11,9 @@ private:
     std::vector<double> _doubleVector;
     std::vector<std::string> _stringVector;
     size_t _size;
+    bool isIntNonEmpty = false;
+    bool isDoubleNonEmpty = false;
+    bool isStringNonEmpty = false;
     template <typename T> void coreSortGeneric(std::vector<T>& data, std::vector<size_t>& perm, size_t start, size_t end);
     template <typename T> std::vector<std::pair<size_t, size_t>> reShardGeneric( const std::vector<T>& data,
         std::vector<std::pair<size_t, size_t>>& existingShards);
@@ -26,6 +29,7 @@ public:
     // Get the size of the column
     size_t size() const;
 
+
     // Print an element at a given index
     void printElement(size_t index, std::ostream& stream) const;
 
@@ -38,7 +42,7 @@ public:
     // Apply permutation to reorder the column
     void applyPermutation(const std::vector<size_t>& perm, size_t start, size_t end);
 
-    bool isGreater(size_t i, size_t j);
+    int8_t   compare(size_t i, size_t j);
     bool areEqual(const AnyColumn& other) const;
 
 };

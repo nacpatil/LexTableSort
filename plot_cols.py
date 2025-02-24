@@ -30,11 +30,11 @@ def add_comparison_to_plot(filename1, label1, filename2, label2, color):
     """
     # Read and convert data for the first file
     num_rows1, sort_times1 = read_csv(filename1)
-    num_rows_millions1 = [x / 1e6 for x in num_rows1]
+    num_rows_millions1 = [x   for x in num_rows1]
 
     # Read and convert data for the second file
     num_rows2, sort_times2 = read_csv(filename2)
-    num_rows_millions2 = [x / 1e6 for x in num_rows2]
+    num_rows_millions2 = [x  for x in num_rows2]
 
     # Plot the data for the first dataset with marker 'x'
     plt.plot(num_rows_millions1, sort_times1, marker='x', linestyle='-', color=color, label=label1)
@@ -45,26 +45,11 @@ def add_comparison_to_plot(filename1, label1, filename2, label2, color):
 plt.figure(figsize=(10, 8))
 
 # Add each dataset comparison with a designated color.
+ 
 add_comparison_to_plot(
-    'out/build/x64-release/performance_results_perm_rand.csv',
-    'Forward Permutation (Random)',
-    'out/build/x64-release/performance_results_comp_rand.csv',
-    'Comparator (Random)',
-    color='blue'
-)
-
-add_comparison_to_plot(
-    'out/build/x64-release/performance_results_perm_seq.csv',
-    'Forward Permutation (Shuffled)',
-    'out/build/x64-release/performance_results_comp_seq.csv',
-    'Comparator (Shuffled)',
-    color='green'
-)
-
-add_comparison_to_plot(
-    'out/build/x64-release/performance_results_perm_preSorted.csv',
+    'out/build/x64-release/performance_results_perm_rand_coltest.csv',
     'Forward Permutation (PreSorted)',
-    'out/build/x64-release/performance_results_comp_preSorted.csv',
+    'out/build/x64-release/performance_results_comp_rand_coltest.csv',
     'Comparator (PreSorted)',
     color='red'
 )
@@ -73,9 +58,9 @@ add_comparison_to_plot(
 
 
 # Configure plot labels, title, and grid.
-plt.xlabel('Number of Rows (millions)')
+plt.xlabel('Number of Columns')
 plt.ylabel('Sort Time (seconds)')
-plt.title('Sorting Performance Comparison')
+plt.title('Sorting Performance Comparison vs NumColumns')
 plt.grid(True)
 plt.legend(title="Legend")
 plt.show()

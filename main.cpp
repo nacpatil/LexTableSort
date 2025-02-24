@@ -28,14 +28,16 @@ int main() {
     // Print after sorting
     table.print("\nAfter sort");  // ? Fixed: `print()` is a method of `Table`
     std::cout << "=======================Run Complete \n\n";
-
     Tests().runDocTests();  // Run all test cases 
-    PerformanceTest().runPerformance("perm", "rand");
-    PerformanceTest().runPerformance("perm","seq");
-    PerformanceTest().runPerformance("perm", "preSorted");
-    PerformanceTest().runPerformance("comp", "rand");
-    PerformanceTest().runPerformance("comp", "seq");
-    PerformanceTest().runPerformance("comp", "preSorted");  
+    //PerformanceTest().runPerformance("perm", "rand");
+    //PerformanceTest().runPerformance("perm","seq");
+    //PerformanceTest().runPerformance("perm", "preSorted");
+    //PerformanceTest().runPerformance("comp", "rand");
+    //PerformanceTest().runPerformance("comp", "seq");
+    //PerformanceTest().runPerformance("comp", "preSorted");  
+
+    PerformanceTest().runPerformanceOnColumns("perm", "rand", 10000000, 20);
+    PerformanceTest().runPerformanceOnColumns("comp", "rand", 10000000, 20);
 
  
 

@@ -13,6 +13,28 @@ Table::Table(const std::initializer_list<AnyColumn>& l) : _columns(l) {
     }
 }
 
+void Table::addColumn(const AnyColumn& newColumn) {
+    // Ensure the new column has the same number of rows
+    if (!_columns.empty() && newColumn.size() != _rows) {
+        throw std::invalid_argument("Error: New column must have the same number of rows as existing columns.");
+    }
+    // If the table was empty, set the number of rows based on the first column added
+    if (_columns.empty()) {
+        _rows = newColumn.size();
+    }
+        // Add the new column to the list
+    _columns.push_back(newColumn);
+
+    // Update the column count
+    _vectors_count++;
+}
+
+
+// Get the number of rows
+size_t Table::numRows() const {
+    return _columns.empty() ? 0 : _columns.cbegin()->size();
+}
+
 void Table::comparatorSort() {
     std::vector<size_t> perm(_rows);
     std::iota(perm.begin(), perm.end(), 0);
@@ -57,10 +79,7 @@ void Table::sort(std::string type) {
     if (type == "comp") { comparatorSort(); }
 }
 
-// Get the number of rows
-size_t Table::numRows() const {
-    return _columns.empty() ? 0 : _columns.cbegin()->size();
-}
+
 
 // Print table content
 void Table::print(const std::string& str) const {
@@ -96,14 +115,12 @@ bool Table::isEqual(const Table& other) const {
     return true;  // If loop completes, all columns are equal
 }
  
+
 bool Table::isGreater(size_t i, size_t j) {
     for (auto it = _columns.begin(); it != _columns.end(); ++it) {
-        // Check if one row is less than the other in this column.
-        if (it->isGreater(i, j))
-            return true;  // i is less than j.
-        else if (it->isGreater(j, i))
-            return false; // j is less than i.
-        // If equal, move to the next column.
+        int result = it->compare(i, j);
+        if (result < 0) return true;   // i is greater than j
+        else if (result > 0) return false; // j is greater than i
     }
-    return false; // All columns are equal.
+    return false; // All columns are equal
 }

@@ -15,6 +15,8 @@ public:
     // Constructor
     Table(const std::initializer_list<AnyColumn>& l);
 
+    void addColumn(const AnyColumn& newColumn);
+
     // Sort the table rows
     void sort(std::string type = "perm");
     void comparatorSort();

@@ -11,12 +11,11 @@
 #include <omp.h>
 #include <cstddef>  // For ptrdiff_t
 
-bool doneSorting = false;
+
 // Constructor Implementations
-//AnyColumn::AnyColumn(const std::vector<int>& values) : _intVector(values) { _size = values.size(); }
-AnyColumn::AnyColumn(     std::vector<int>&& values) : _intVector(std::move(values)) {  _size = _intVector.size();}
-AnyColumn::AnyColumn(const std::vector<double>& values) : _doubleVector(values) { _size = values.size(); }
-AnyColumn::AnyColumn(const std::vector<std::string>& values) : _stringVector(values) { _size = values.size(); }
+AnyColumn::AnyColumn(std::vector<int>&& values) : _intVector(std::move(values)) { _size = _intVector.size(); isIntNonEmpty = (_size > 0);}
+AnyColumn::AnyColumn(const std::vector<double>& values) : _doubleVector(values) { _size = values.size(); isDoubleNonEmpty = (_size > 0);}
+AnyColumn::AnyColumn(const std::vector<std::string>& values) : _stringVector(values) { _size = values.size(); isStringNonEmpty = (_size > 0);}
 
 // Only one of the fields will be non-empty.
 std::vector<int> _intVector;
@@ -42,9 +41,9 @@ size_t AnyColumn::size() const
 
 void AnyColumn::printElement(size_t index, std::ostream& stream) const
 {
-    if (_intVector.size() > 0) stream << _intVector[index];
-    if (_doubleVector.size() > 0) stream << _doubleVector[index];
-    if (_stringVector.size() > 0) stream << _stringVector[index];
+    if (isIntNonEmpty) stream << _intVector[index];
+    if (isDoubleNonEmpty) stream << _doubleVector[index];
+    if (isStringNonEmpty) stream << _stringVector[index];
 }
 
 // This is a template to sort fragment of the object vector and update permutation index vector for the fragment. 
@@ -82,13 +81,13 @@ void AnyColumn::sort(std::vector<size_t>& perm, size_t start, size_t end) {
         std::cerr << "Invalid range: start=" << start << ", end=" << end << "\n";
     }
 
-    if (!_intVector.empty()) {
+    if (isIntNonEmpty) {
         coreSortGeneric(_intVector, perm, start, end);
     }
-    else if (!_doubleVector.empty()) {
+    else if (isDoubleNonEmpty) {
         coreSortGeneric(_doubleVector, perm, start, end);
     }
-    else if (!_stringVector.empty()) {
+    else if (isStringNonEmpty) {
         coreSortGeneric(_stringVector, perm, start, end);
     }
 }
@@ -128,13 +127,13 @@ template <typename T> std::vector<std::pair<size_t, size_t>> AnyColumn::reShardG
 
 // this is wrapper to compute duplicate entries making shards of full vector. This is done after vector is sorted.
 std::vector<std::pair<size_t, size_t>> AnyColumn::ReShard(std::vector<std::pair<size_t, size_t>>& existingShards) {
-    if (!_intVector.empty()) {
+    if (isIntNonEmpty) {
         return reShardGeneric(_intVector, existingShards);
     }
-    else if (!_doubleVector.empty()) {
+    else if (isDoubleNonEmpty) {
         return reShardGeneric(_doubleVector, existingShards);
     }
-    else if (!_stringVector.empty()) {
+    else if (isStringNonEmpty) {
         return reShardGeneric(_stringVector, existingShards);
     }
     return {};  // Return empty if no data is available
@@ -143,14 +142,10 @@ std::vector<std::pair<size_t, size_t>> AnyColumn::ReShard(std::vector<std::pair<
 
 // This function applys permutation or swapping vector based on how previous vectors were sorted. 
 // This sort of forward propogates previous vector sorts. 
-
 void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, size_t end)
 {
-    if (start >= end || start >= perm.size() || end > perm.size()) {
-        return; // No permutation needed if range is invalid
-    }
 
-    if (!_intVector.empty())
+    if (isIntNonEmpty)
     {
         std::vector<int> temp(_intVector);
         //#pragma omp parallel for
@@ -158,9 +153,8 @@ void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, 
             size_t index = static_cast<size_t>(i);  // Casting to size_t for indexing
             _intVector[index] = temp[perm[index]];  // Access using size_t
         }
-
     }
-    else if (!_doubleVector.empty())
+    else if (isDoubleNonEmpty)
     {
         std::vector<double> temp(_doubleVector);
         #pragma omp parallel for
@@ -169,7 +163,7 @@ void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, 
             _doubleVector[index] = temp[perm[index]];  // Access using size_t
         }
     }
-    else if (!_stringVector.empty())
+    else if (isStringNonEmpty)
     {
         std::vector<std::string> temp(_stringVector);
         #pragma omp parallel for
@@ -180,22 +174,23 @@ void AnyColumn::applyPermutation(const std::vector<size_t>& perm, size_t start, 
     }
 }
 
- 
-bool AnyColumn::isGreater(size_t i, size_t j) {
-    if (!_intVector.empty()) {
-        if (_intVector[i] < _intVector[j]) return true;
-        if (_intVector[i] > _intVector[j]) return false;
+  
+int8_t  AnyColumn::compare(size_t i, size_t j) {
+    if (isIntNonEmpty) {
+        if (_intVector[i] < _intVector[j]) return -1;
+        if (_intVector[i] > _intVector[j]) return 1;
     }
-    if (!_doubleVector.empty()) {
-        if (_doubleVector[i] < _doubleVector[j]) return true;
-        if (_doubleVector[i] > _doubleVector[j]) return false;
+    if (isDoubleNonEmpty) {
+        if (_doubleVector[i] < _doubleVector[j]) return -1;
+        if (_doubleVector[i] > _doubleVector[j]) return 1;
     }
-    if (!_stringVector.empty()) {
-        if (_stringVector[i] < _stringVector[j]) return true;
-        if (_stringVector[i] > _stringVector[j]) return false;
+    if (isStringNonEmpty) {
+        if (_stringVector[i] < _stringVector[j]) return -1;
+        if (_stringVector[i] > _stringVector[j]) return 1;
     }
-    return false; // They are equal in this column type.
+    return 0; // They are equal.
 }
+
 
 
 
@@ -205,7 +200,6 @@ bool AnyColumn::areEqual(const AnyColumn& other) const {
     if (_size != other._size) {
         return false; // Different sizes, can't be equal
     }
-               
     // Compare based on which vector is used
     if (!_intVector.empty() && !other._intVector.empty()) {
         return _intVector == other._intVector;
