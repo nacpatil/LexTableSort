@@ -3,7 +3,6 @@
 #include <omp.h>
 #include <chrono>
 #include <random>
-
 #include <fstream>
 
 void PerformanceTest::runPerformance(std::string algoType, std::string dataType, size_t numCols) {
