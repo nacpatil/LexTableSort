@@ -60,7 +60,7 @@ add_comparison_to_plot(
 # Configure plot labels, title, and grid.
 plt.xlabel('Number of Columns')
 plt.ylabel('Sort Time (seconds)')
-plt.title('Sorting Performance Comparison vs NumColumns')
+plt.title('Table Sorting Time vs NumColumns on Random Ints')
 plt.grid(True)
 plt.legend(title="Legend")
 plt.show()
