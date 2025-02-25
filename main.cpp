@@ -29,7 +29,7 @@ int main() {
     table.print("\nAfter sort");  // ? Fixed: `print()` is a method of `Table`
     std::cout << "=======================Run Complete \n\n";
     Tests().runDocTests();  // Run all test cases 
-    //PerformanceTest().runPerformance("perm", "rand");
+    PerformanceTest().runPerformance("perm", "rand");
     PerformanceTest().runPerformance("perm","seq");
     PerformanceTest().runPerformance("perm", "preSorted");
     PerformanceTest().runPerformance("comp", "rand");
